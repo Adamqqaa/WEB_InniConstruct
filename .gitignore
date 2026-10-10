@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.save
+.env.*.local
+
+# база данных
+data/
+*.db
+*.db-shm
+*.db-wal
+data.db.backup
+
+# загруженные файлы
+uploads/sprites/*
+uploads/previews/*
+!uploads/sprites/.gitkeep
+!uploads/previews/.gitkeep
