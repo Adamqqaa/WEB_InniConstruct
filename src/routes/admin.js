@@ -142,4 +142,20 @@ router.delete('/users/:id/roles/:role', requireRole('admin'), async (req, res, n
   }
 });
 
+// DELETE /api/admin/users/:id — удалить пользователя (только admin)
+router.delete('/users/:id', requireRole('admin'), async (req, res, next) => {
+  try {
+    const userId = Number(req.params.id);
+    const user = await usersRepo.findById(userId);
+    if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+    if (userId === req.user.id) {
+      return res.status(400).json({ error: 'Нельзя удалить самого себя' });
+    }
+    await usersRepo.remove(userId);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

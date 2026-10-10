@@ -75,6 +75,7 @@ r = await req('POST', '/api/auth/register', {
 });
 check('register', r.status === 201 && r.body.token, r.body);
 const userToken = r.body.token;
+const userId = r.body.user?.id;
 
 // 3. login admin (после npm run seed)
 r = await req('POST', '/api/auth/login', { body: { login: 'admin', password: 'admin123456' } });
@@ -99,10 +100,11 @@ r = await req('POST', '/api/uploads/sprite', { token: userToken, form: bad });
 check('reject non-image', r.status === 400, r.body);
 
 // 6. create theme with elements + tags
+const uniqTitle = 'Neon Player ' + stamp; // уникальный заголовок: тест можно гонять повторно
 r = await req('POST', '/api/themes', {
   token: userToken,
   body: {
-    title: 'Neon Player',
+    title: uniqTitle,
     description: 'Тёмная неоновая тема',
     status: 'draft',
     elements: [
@@ -180,8 +182,8 @@ r = await req('POST', `/api/admin/themes/${themeId}/approve`, {
 });
 check('approve', r.status === 200 && r.body.ok, r.body);
 
-// 17. public list search + sort
-r = await req('GET', '/api/themes?q=neon&sort=title&order=asc');
+// 17. public list search + sort (уникальные токены => ровно одна тема даже после прошлых запусков)
+r = await req('GET', '/api/themes?q=' + encodeURIComponent(uniqTitle) + '&sort=title&order=asc');
 check('public search by title', r.status === 200 && r.body.total === 1, r.body);
 r = await req('GET', `/api/themes?q=${tester}&sort=author`);
 check('public search by author', r.status === 200 && r.body.total === 1, r.body);
@@ -236,6 +238,10 @@ check('delete theme', r.status === 200 && r.body.ok, r.body);
 // 26. 404 route
 r = await req('GET', '/api/nope');
 check('404', r.status === 404, r.body);
+
+// 27. очистка: админ удаляет тестового пользователя (каскадом удаляются его темы)
+r = await req('DELETE', `/api/admin/users/${userId}`, { token: adminToken });
+check('cleanup: удалён тестовый пользователь', r.status === 200 && r.body.ok, r.body);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

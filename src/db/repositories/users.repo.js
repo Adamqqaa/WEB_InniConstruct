@@ -47,6 +47,10 @@ export async function setActive(id, isActive) {
   await execute('UPDATE users SET is_active = ? WHERE id = ?', [isActive ? 1 : 0, id]);
 }
 
+export async function remove(id) {
+  await execute('DELETE FROM users WHERE id = ?', [id]);
+}
+
 /** Список пользователей с ролями (для админки). */
 export function listWithRoles({ limit = 50, offset = 0 } = {}) {
   return query(
