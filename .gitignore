@@ -2,6 +2,7 @@ node_modules/
 .env
 .env.save
 .env.*.local
+.DS_Store
 
 # база данных
 data/
